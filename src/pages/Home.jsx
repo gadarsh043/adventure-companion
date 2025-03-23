@@ -66,7 +66,7 @@ const Home = () => {
   };
 
   const shareAdventure = () => {
-    const shareText = `✨ ${result.tripTitle} ✨\n\nAdventure: ${result.adventure}\nTo-Do:\n${result.todo.map((t, i) => `- ${t}`).join('\n')}\nWeather: ${result.weather}\nBuzz: ${result.news.substring(0, 100)}... ${result.newsUrl}`;
+    const shareText = `✨ ${result.tripTitle} ✨\n\nAdventure: ${result.adventure}\nTo-Do:\n${result.todo.map((t) => `- ${t}`).join('\n')}\nWeather: ${result.weather}\nTips:\n${result.tips.map((t) => `- ${t}`).join('\n')}`;
     if (navigator.share) {
       navigator.share({
         title: result.tripTitle,
@@ -201,13 +201,12 @@ const Home = () => {
               <section className="info-section">
                 <h3>Weather</h3>
                 <p>{result.weather}</p>
-                <h3>Local Buzz</h3>
-                <p>{result.news}</p>
-                {result.image && (
-                  <div className="news-image">
-                    <img src={result.image} alt="Local News" />
-                  </div>
-                )}
+                <h3>Travel Tips</h3>
+                <ul>
+                  {result.tips.map((tip, index) => (
+                    <li key={index}>{tip}</li>
+                  ))}
+                </ul>
               </section>
             </>
           )}
