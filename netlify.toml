@@ -4,6 +4,6 @@
   functions = "netlify/functions"
 
 [dev]
-  framework = "react"        # Helps Netlify CLI
-  targetPort = 8888          # Matches npm run netlify
+  framework = "vite"        # Helps Netlify CLI
+  targetPort = 5173          # Matches npm run netlify
   port = 8888

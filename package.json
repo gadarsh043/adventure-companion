@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "netlify-cli": "^19.0.3",
-    "node-fetch": "^3.3.2",
+    "node-fetch": "^2.6.12",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.27.0"
