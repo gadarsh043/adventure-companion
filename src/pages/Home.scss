@@ -110,7 +110,6 @@ ul {
 li {
   font-size: 1.1rem;
   color: var(--text);
-  padding: 12px 12px 12px 40px;
   background: #f9f9f9;
   margin: 8px 0;
   border-radius: 8px;
@@ -118,12 +117,7 @@ li {
   transition: background 0.3s ease;
 }
 
-li:hover {
-  background: #e9ecef;
-}
-
 li:before {
-  content: '✨';
   color: var(--primary);
   position: absolute;
   left: 15px;
@@ -160,4 +154,112 @@ li:before {
   h2 { font-size: 1.6rem; }
   select, input, button, p, li { font-size: 1rem; }
   .input-form { padding: 15px; }
+}
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dialog-box {
+  background: white;
+  padding: 10px;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  animation: popIn 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+@keyframes popIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.dialog-box h2 {
+  color: var(--secondary);
+  font-size: 2rem;
+  margin-bottom: 15px;
+}
+
+.dialog-box p {
+  width: 100%;
+  font-size: 1.1rem;
+  color: var(--text);
+  margin-bottom: 20px;
+}
+
+.dialog-box input {
+  display: block;
+  width: 80%;
+  padding: 12px;
+  margin: 10px 0;
+  font-size: 1.1rem;
+  border: 2px solid var(--primary);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dialog-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.dialog-buttons button {
+  padding: 10px 20px;
+  font-size: 1.1rem;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.dialog-buttons button:hover {
+  transform: scale(1.05);
+}
+
+.dialog-buttons .info-button {
+  background: none;
+  color: var(--primary);
+  border: 2px solid var(--primary);
+}
+
+.dialog-buttons .info-button:hover {
+  background: var(--primary);
+  color: white;
+  transform: scale(1.05);
+}
+
+.api-instructions {
+  padding: 15px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  text-align: left;
+  font-size: 1rem;
+}
+
+.api-instructions ul {
+  list-style-type: disc;
+  padding-left: 20px;
+}
+
+.api-instructions a {
+  color: var(--primary);
+  text-decoration: underline;
 }

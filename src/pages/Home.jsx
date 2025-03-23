@@ -8,6 +8,10 @@ const Home = () => {
   const [hours, setHours] = useState('');
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [password, setPassword] = useState('');
+  const [userApiKey, setUserApiKey] = useState('');
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [showApiInstructions, setShowApiInstructions] = useState(false);
 
   useEffect(() => {
     fetch('https://restcountries.com/v3.1/all?fields=name,cca2')
@@ -19,12 +23,24 @@ const Home = () => {
       .catch(err => console.error('Failed to fetch countries:', err));
   }, []);
 
+  const handleAuth = () => {
+    if (password === 'Z@ak2024!' || userApiKey) {
+      setIsAuthorized(true);
+    } else {
+      alert('Nope! Guess "What’s My Room WiFi Password?" or your own DeepSeek API key, buddy!');
+      setPassword('');
+    }
+  };
+
   const getAdventure = async () => {
     setLoading(true);
     try {
       const res = await fetch('/.netlify/functions/adventure', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(userApiKey && { 'X-DeepSeek-API-Key': userApiKey })
+        },
         body: JSON.stringify({ city: `${city}, ${country}`, hours })
       });
       if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
@@ -42,6 +58,54 @@ const Home = () => {
     setHours('');
     setResult(null);
   };
+
+  if (!isAuthorized) {
+    return (
+      <div className="app">
+        <div className="dialog-overlay">
+          <div className="dialog-box">
+            <h2>Hey, Adventurer!</h2>
+            <p>Unlock with the magic word or your DeepSeek API key.</p>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="What’s My Room WiFi Password?"
+              onKeyPress={(e) => e.key === 'Enter' && handleAuth()}
+              autoFocus
+            />
+            <input
+              type="text"
+              value={userApiKey}
+              onChange={(e) => setUserApiKey(e.target.value)}
+              placeholder="Or your DeepSeek API key"
+              onKeyPress={(e) => e.key === 'Enter' && handleAuth()}
+            />
+            <div className="dialog-buttons">
+              <button onClick={handleAuth}>Let’s Go!</button>
+              <button 
+                onClick={() => setShowApiInstructions(!showApiInstructions)}
+                className="info-button"
+              >
+                {showApiInstructions ? 'Hide Info' : 'Get API Key?'}
+              </button>
+            </div>
+            {showApiInstructions && (
+              <div className="api-instructions">
+                <p>Grab your own DeepSeek API key:</p>
+                <ul>
+                  <li>Head to <a href="https://platform.deepseek.com/" target="_blank" rel="noopener noreferrer">DeepSeek</a>.</li>
+                  <li>Sign up—it’s quick!</li>
+                  <li>Find the API section, snag your key (looks like sk-abc123...).</li>
+                  <li>Pop it in here and skip the password!</li>
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="app">
@@ -83,18 +147,22 @@ const Home = () => {
             <p className="error">{result.error}</p>
           ) : (
             <>
-              <h2>Your Adventure</h2>
+              <h2>{result.adventure.includes('WiFi') ? 'What’s My Room WiFi Password?' : 'Your Adventure'}</h2>
               <p>{result.adventure}</p>
-              <h2>To-Do</h2>
-              <ul>{result.todo.map((item, i) => <li key={i}>{item}</li>)}</ul>
-              <h2>Weather</h2>
-              <p>{result.weather}</p>
-              <h2>News</h2>
-              <p>{result.news}</p>
-              {result.image && (
-                <div className="news-image">
-                  <img src={result.image} alt="News" />
-                </div>
+              {!result.adventure.includes('WiFi') && (
+                <>
+                  <h2>To-Do</h2>
+                  <ul>{result.todo.map((item, i) => <li key={i}>{item}</li>)}</ul>
+                  <h2>Weather</h2>
+                  <p>{result.weather}</p>
+                  <h2>News</h2>
+                  <p>{result.news}</p>
+                  {result.image && (
+                    <div className="news-image">
+                      <img src={result.image} alt="News" />
+                    </div>
+                  )}
+                </>
               )}
             </>
           )}
