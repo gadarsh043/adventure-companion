@@ -12,6 +12,7 @@ const Home = () => {
   const [userApiKey, setUserApiKey] = useState('');
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [showApiInstructions, setShowApiInstructions] = useState(false);
+  const [checkedTodos, setCheckedTodos] = useState([]);
 
   useEffect(() => {
     fetch('https://restcountries.com/v3.1/all?fields=name,cca2')
@@ -34,6 +35,7 @@ const Home = () => {
 
   const getAdventure = async () => {
     setLoading(true);
+    setCheckedTodos([]);
     try {
       const res = await fetch('/.netlify/functions/adventure', {
         method: 'POST',
@@ -45,11 +47,36 @@ const Home = () => {
       });
       if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
       const data = await res.json();
-      setResult(data);
+      setResult({ ...data, tripTitle: `${city} Getaway: ${hours} Hours` });
     } catch (error) {
       setResult({ error: error.message });
     }
     setLoading(false);
+  };
+
+  const toggleTodo = (index) => {
+    setCheckedTodos(prev => 
+      prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]
+    );
+  };
+
+  const copyTodo = (item) => {
+    navigator.clipboard.writeText(item);
+    alert('To-do copied to clipboard!');
+  };
+
+  const shareAdventure = () => {
+    const shareText = `✨ ${result.tripTitle} ✨\n\nAdventure: ${result.adventure}\nTo-Do:\n${result.todo.map((t, i) => `- ${t}`).join('\n')}\nWeather: ${result.weather}\nBuzz: ${result.news.substring(0, 100)}... ${result.newsUrl}`;
+    if (navigator.share) {
+      navigator.share({
+        title: result.tripTitle,
+        text: shareText,
+        url: window.location.href
+      }).catch(err => console.error('Share failed:', err));
+    } else {
+      navigator.clipboard.writeText(shareText);
+      alert('Adventure copied to clipboard!');
+    }
   };
 
   const reset = () => {
@@ -57,6 +84,7 @@ const Home = () => {
     setCity('');
     setHours('');
     setResult(null);
+    setCheckedTodos([]);
   };
 
   if (!isAuthorized) {
@@ -64,8 +92,8 @@ const Home = () => {
       <div className="app">
         <div className="dialog-overlay">
           <div className="dialog-box">
-            <h2>Hey, Adventurer!</h2>
-            <p>Unlock with the magic word or your DeepSeek API key.</p>
+            <h2>Ready to Explore?</h2>
+            <p>Unlock with the secret code or your DeepSeek API key.</p>
             <input
               type="password"
               value={password}
@@ -82,22 +110,22 @@ const Home = () => {
               onKeyPress={(e) => e.key === 'Enter' && handleAuth()}
             />
             <div className="dialog-buttons">
-              <button onClick={handleAuth}>Let’s Go!</button>
+              <button onClick={handleAuth}>Unlock Adventure</button>
               <button 
                 onClick={() => setShowApiInstructions(!showApiInstructions)}
                 className="info-button"
               >
-                {showApiInstructions ? 'Hide Info' : 'Get API Key?'}
+                {showApiInstructions ? 'Hide' : 'API Key Info'}
               </button>
             </div>
             {showApiInstructions && (
               <div className="api-instructions">
-                <p>Grab your own DeepSeek API key:</p>
+                <p>Get your DeepSeek API key:</p>
                 <ul>
-                  <li>Head to <a href="https://platform.deepseek.com/" target="_blank" rel="noopener noreferrer">DeepSeek</a>.</li>
-                  <li>Sign up—it’s quick!</li>
-                  <li>Find the API section, snag your key (looks like sk-abc123...).</li>
-                  <li>Pop it in here and skip the password!</li>
+                  <li>Visit <a href="https://platform.deepseek.com/" target="_blank" rel="noopener noreferrer">DeepSeek</a>.</li>
+                  <li>Sign up or log in.</li>
+                  <li>Generate a key in API settings (e.g., sk-abc123...).</li>
+                  <li>Use it here to skip the code!</li>
                 </ul>
               </div>
             )}
@@ -109,7 +137,10 @@ const Home = () => {
 
   return (
     <div className="app">
-      <h1>AI Adventure Companion</h1>
+      <header className="app-header">
+        <h1>Adventure Awaits</h1>
+        <p>Plan your next escape in seconds!</p>
+      </header>
       {!result ? (
         <div className="input-form">
           <select
@@ -117,7 +148,7 @@ const Home = () => {
             onChange={(e) => { setCountry(e.target.value); setCity(''); }}
             disabled={loading || !countries.length}
           >
-            <option value="">Select Country</option>
+            <option value="">Pick a Country</option>
             {countries.map(c => (
               <option key={c.cca2} value={c.name.common}>{c.name.common}</option>
             ))}
@@ -125,48 +156,62 @@ const Home = () => {
           <input
             value={city}
             onChange={(e) => setCity(e.target.value)}
-            placeholder="Enter city or place"
+            placeholder="City or Place"
             disabled={loading || !country}
           />
           <input
             type="number"
             value={hours}
             onChange={(e) => setHours(e.target.value)}
-            placeholder="Hours free"
+            onWheel={(e) => e.target.blur()}
+            placeholder="Hours Free (1+)"
             min="1"
-            max="24"
             disabled={loading}
           />
           <button onClick={getAdventure} disabled={loading || !country || !city || !hours}>
-            {loading ? 'Planning...' : 'Plan My Adventure!'}
+            {loading ? 'Planning...' : 'Launch Adventure'}
           </button>
         </div>
       ) : (
-        <div className="result">
+        <div className="result-container">
+          <div className="result-hero">
+            <h2>{result.tripTitle}</h2>
+            <button className="share-btn" onClick={shareAdventure}>Share Plan</button>
+          </div>
           {result.error ? (
             <p className="error">{result.error}</p>
           ) : (
             <>
-              <h2>{result.adventure.includes('WiFi') ? 'What’s My Room WiFi Password?' : 'Your Adventure'}</h2>
-              <p>{result.adventure}</p>
-              {!result.adventure.includes('WiFi') && (
-                <>
-                  <h2>To-Do</h2>
-                  <ul>{result.todo.map((item, i) => <li key={i}>{item}</li>)}</ul>
-                  <h2>Weather</h2>
-                  <p>{result.weather}</p>
-                  <h2>News</h2>
-                  <p>{result.news}</p>
-                  {result.image && (
-                    <div className="news-image">
-                      <img src={result.image} alt="News" />
-                    </div>
-                  )}
-                </>
-              )}
+              <section className="todo-section">
+                <h3>To-Do List</h3>
+                <ul>
+                  {result.todo.map((item, index) => (
+                    <li key={index} className={checkedTodos.includes(index) ? 'checked' : ''}>
+                      <input
+                        type="checkbox"
+                        checked={checkedTodos.includes(index)}
+                        onChange={() => toggleTodo(index)}
+                      />
+                      <span>{item}</span>
+                      <button className="copy-btn" onClick={() => copyTodo(item)}>Copy</button>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+              <section className="info-section">
+                <h3>Weather</h3>
+                <p>{result.weather}</p>
+                <h3>Local Buzz</h3>
+                <p>{result.news}</p>
+                {result.image && (
+                  <div className="news-image">
+                    <img src={result.image} alt="Local News" />
+                  </div>
+                )}
+              </section>
             </>
           )}
-          <button onClick={reset} disabled={loading}>Plan Another</button>
+          <button className="reset-btn" onClick={reset} disabled={loading}>New Adventure</button>
         </div>
       )}
     </div>

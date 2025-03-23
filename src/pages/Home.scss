@@ -1,167 +1,241 @@
 :root {
-  --primary: #2a9d8f; /* Teal */
-  --secondary: #264653; /* Dark teal */
-  --accent: #e9c46a; /* Yellow */
-  --background: linear-gradient(135deg, #f4f4f4, #e0e0e0); /* Subtle gradient */
-  --text: #333;
+  --primary: #ff6f61; /* Coral - vibrant, adventurous */
+  --secondary: #1a3c34; /* Deep teal - grounding */
+  --accent: #f4a261; /* Warm orange - energetic */
+  --background: #f8f1e9; /* Creamy off-white */
+  --text: #2d2d2d; /* Near-black for contrast */
+  --shadow: rgba(0, 0, 0, 0.15);
 }
 
 .app {
-  max-width: 900px;
-  margin: 40px auto;
-  padding: 30px;
-  font-family: 'Roboto', Arial, sans-serif;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Poppins', Arial, sans-serif;
   background: var(--background);
-  border-radius: 16px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-  animation: fadeIn 0.5s ease-in;
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-h1 {
-  color: var(--secondary);
-  font-size: 2.8rem;
+.app-header {
   text-align: center;
-  margin-bottom: 40px;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+  padding: 40px 20px 20px;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: white;
+  border-radius: 0 0 20px 20px;
+  box-shadow: 0 4px 15px var(--shadow);
+  animation: slideDown 0.5s ease;
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.app-header h1 {
+  font-size: 3rem;
+  margin: 0;
+  text-shadow: 2px 2px 4px var(--shadow);
+}
+
+.app-header p {
+  font-size: 1.2rem;
+  margin: 10px 0 0;
+  opacity: 0.9;
 }
 
 .input-form {
   display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 20px;
+  padding: 30px;
   background: white;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 15px;
+  box-shadow: 0 6px 20px var(--shadow);
+  margin: 30px auto;
+  max-width: 800px;
 }
 
 select, input {
-  padding: 14px;
+  padding: 15px;
   font-size: 1.1rem;
-  border: 2px solid var(--primary);
-  border-radius: 8px;
+  border: none;
+  border-radius: 10px;
   background: #fff;
   color: var(--text);
-  transition: all 0.3s ease;
+  box-shadow: inset 0 2px 5px var(--shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 select:focus, input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 8px rgba(233, 196, 106, 0.5);
+  outline: none;
+  transform: scale(1.02);
+  box-shadow: 0 0 10px var(--accent);
 }
 
 button {
-  padding: 14px;
+  padding: 15px;
   font-size: 1.2rem;
-  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  background: var(--primary);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   transition: transform 0.2s ease, background 0.3s ease;
+  box-shadow: 0 4px 10px var(--shadow);
 }
 
 button:hover:not(:disabled) {
   transform: scale(1.05);
-  background: linear-gradient(90deg, var(--secondary), var(--primary));
+  background: var(--secondary);
 }
 
 button:disabled {
   background: #ccc;
   transform: none;
+  cursor: not-allowed;
 }
 
-.result {
+.result-container {
+  padding: 30px;
   background: white;
-  padding: 25px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  animation: slideUp 0.5s ease;
+  border-radius: 15px;
+  box-shadow: 0 6px 20px var(--shadow);
+  margin: 30px auto;
+  max-width: 800px;
+  animation: fadeUp 0.5s ease;
 }
 
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(30px); }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-h2 {
-  color: var(--secondary);
+.result-hero {
+  background: linear-gradient(90deg, var(--secondary), var(--primary));
+  color: white;
+  padding: 20px;
+  border-radius: 15px 15px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.result-hero h2 {
   font-size: 2rem;
-  margin: 25px 0 15px;
-  border-bottom: 3px solid var(--accent);
-  padding-bottom: 8px;
+  margin: 0;
+  text-shadow: 1px 1px 3px var(--shadow);
 }
 
-p {
-  font-size: 1.2rem;
-  color: var(--text);
-  line-height: 1.7;
+.share-btn {
+  background: var(--accent);
+  padding: 10px 20px;
+  font-size: 1rem;
 }
 
-ul {
+.todo-section, .info-section {
+  padding: 20px;
+}
+
+.todo-section h3, .info-section h3 {
+  font-size: 1.8rem;
+  color: var(--secondary);
+  margin: 0 0 15px;
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 5px;
+}
+
+.todo-section ul {
   list-style: none;
   padding: 0;
 }
 
-li {
-  font-size: 1.1rem;
-  color: var(--text);
+.todo-section li {
+  display: flex;
+  align-items: center;
+  padding: 15px;
   background: #f9f9f9;
-  margin: 8px 0;
-  border-radius: 8px;
-  position: relative;
-  transition: background 0.3s ease;
+  border-radius: 10px;
+  margin: 10px 0;
+  transition: background 0.3s ease, transform 0.2s ease;
 }
 
-li:before {
-  color: var(--primary);
-  position: absolute;
-  left: 15px;
-  font-size: 1.2rem;
+.todo-section li:hover {
+  background: #f0f0f0;
+  transform: translateX(5px);
+}
+
+.todo-section li.checked {
+  background: #e0f7e9;
+  text-decoration: line-through;
+}
+
+.todo-section li input[type="checkbox"] {
+  margin-right: 15px;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.todo-section li span {
+  flex-grow: 1;
+  font-size: 1.1rem;
+  color: var(--text);
+}
+
+.copy-btn {
+  background: var(--primary);
+  padding: 8px 15px;
+  font-size: 0.9rem;
+  margin-left: 10px;
+}
+
+.info-section p {
+  font-size: 1.1rem;
+  color: var(--text);
+  line-height: 1.6;
+  margin: 10px 0;
 }
 
 .news-image {
-  margin: 30px 0;
+  margin: 20px 0;
   text-align: center;
 }
 
 .news-image img {
   max-width: 100%;
   height: auto;
-  border-radius: 12px;
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
+  box-shadow: 0 4px 15px var(--shadow);
   transition: transform 0.3s ease;
 }
 
 .news-image img:hover {
-  transform: scale(1.02);
+  transform: scale(1.03);
+}
+
+.reset-btn {
+  display: block;
+  margin: 20px auto 0;
+  background: var(--accent);
 }
 
 .error {
-  color: #e63946;
+  color: #d9534f;
   font-size: 1.2rem;
   text-align: center;
   padding: 20px;
 }
 
-@media (max-width: 600px) {
-  .app { margin: 20px; padding: 20px; }
-  h1 { font-size: 2.2rem; }
-  h2 { font-size: 1.6rem; }
-  select, input, button, p, li { font-size: 1rem; }
-  .input-form { padding: 15px; }
-}
+/* Dialog Styles (unchanged but tweaked for new palette) */
 .dialog-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -169,16 +243,13 @@ li:before {
 
 .dialog-box {
   background: white;
-  padding: 10px;
-  border-radius: 12px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 8px 30px var(--shadow);
   text-align: center;
-  max-width: 400px;
+  max-width: 450px;
   width: 90%;
   animation: popIn 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }
 
 @keyframes popIn {
@@ -188,50 +259,37 @@ li:before {
 
 .dialog-box h2 {
   color: var(--secondary);
-  font-size: 2rem;
+  font-size: 2.2rem;
   margin-bottom: 15px;
 }
 
 .dialog-box p {
-  width: 100%;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   color: var(--text);
   margin-bottom: 20px;
 }
 
 .dialog-box input {
-  display: block;
   width: 80%;
   padding: 12px;
   margin: 10px 0;
   font-size: 1.1rem;
   border: 2px solid var(--primary);
   border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  box-shadow: none;
 }
 
 .dialog-buttons {
   display: flex;
-  gap: 15px;
+  gap: 20px;
   justify-content: center;
   margin-top: 20px;
 }
 
 .dialog-buttons button {
-  padding: 10px 20px;
+  padding: 12px 25px;
   font-size: 1.1rem;
-  background: linear-gradient(90deg, var(--primary), var(--secondary));
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-
-.dialog-buttons button:hover {
-  transform: scale(1.05);
+  background: var(--primary);
 }
 
 .dialog-buttons .info-button {
@@ -243,13 +301,13 @@ li:before {
 .dialog-buttons .info-button:hover {
   background: var(--primary);
   color: white;
-  transform: scale(1.05);
 }
 
 .api-instructions {
+  margin-top: 20px;
   padding: 15px;
   background: #f9f9f9;
-  border-radius: 8px;
+  border-radius: 10px;
   text-align: left;
   font-size: 1rem;
 }
@@ -262,4 +320,15 @@ li:before {
 .api-instructions a {
   color: var(--primary);
   text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .app-header { padding: 20px 10px; }
+  .app-header h1 { font-size: 2rem; }
+  .app-header p { font-size: 1rem; }
+  .input-form { grid-template-columns: 1fr; padding: 20px; }
+  .result-container { padding: 20px; }
+  .result-hero { flex-direction: column; gap: 15px; }
+  .todo-section li { padding: 10px; }
+  .dialog-box { padding: 20px; }
 }

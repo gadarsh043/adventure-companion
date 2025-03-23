@@ -23,15 +23,15 @@ export const handler = async (event) => {
 
     const weatherRes = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${process.env.WEATHER_API_KEY}&units=imperial`);
     const weatherData = await weatherRes.json();
-    // console.log('Weather response:', weatherData);
+    console.log('Weather response:', weatherData);
     const weather = weatherData.weather[0]?.description && weatherData.main?.temp
       ? `${weatherData.weather[0].description}, ${Math.round(weatherData.main.temp)}°F`
       : 'typical weather';
 
-    const newsRes = await fetch(`https://newsapi.org/v2/everything?q=${encodeURIComponent(place)}&apiKey=${process.env.NEWS_API_KEY}&pageSize=1`);
+    const newsRes = await fetch(`https://newsapi.org/v2/everything?q=${encodeURIComponent(city)}&apiKey=${process.env.NEWS_API_KEY}&pageSize=1`);
     const newsData = await newsRes.json();
     // console.log('News response:', newsData);
-    const news = newsData.articles[0]?.title || 'Nothing Big today';
+    const news = newsData.articles[0]?.description || 'Nothing Big today';
     const newsImage = newsData.articles[0]?.urlToImage || '';
 
     const cleanJson = (content) => {
