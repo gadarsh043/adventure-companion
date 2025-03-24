@@ -332,3 +332,11 @@ button:disabled {
   .todo-section li { padding: 10px; }
   .dialog-box { padding: 20px; }
 }
+
+.loading {
+  text-align: center;
+  font-size: 1.2rem;
+  color: var(--primary);
+  margin: 1rem 0;
+  font-weight: 500;
+}

@@ -1,6 +1,4 @@
 import fetch from 'node-fetch';
-import process from 'process';
-process.setMaxListeners(15);
 
 export const handler = async (event) => {
   // console.log('Function invoked with:', event.body);
@@ -13,19 +11,55 @@ export const handler = async (event) => {
   }
   const { city, hours } = body;
   const apiKey = event.headers['x-deepseek-api-key'] || process.env.DEEPSEEK_API_KEY;
+  const type = event.queryStringParameters?.type || 'place';
 
   const cleanJson = (content) => {
     const cleaned = content.replace(/```json\s*|\s*```/g, '').trim();
-    console.log('Cleaned JSON:', cleaned);
+    console.log('Raw JSON from DeepSeek:', cleaned);
     return cleaned;
   };
 
+  const timeFetch = async (label, url, options) => {
+    const start = Date.now();
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000); // 8s cap
+    try {
+      const res = await fetch(url, { ...options, signal: controller.signal });
+      console.log(`${label} took ${Date.now() - start}ms`);
+      return res;
+    } catch (e) {
+      console.error(`${label} timed out or failed:`, e);
+      throw e;
+    } finally {
+      clearTimeout(timeout);
+    }
+  };
+
   try {
-    // Parallelize API calls
-    const [placeRes, weatherRes, aiAdventureRes, aiTodoRes, aiTipsRes] = await Promise.all([
-      fetch(`https://nominatim.openstreetmap.org/search?q=${city}&format=json&limit=1`),
-      fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${process.env.WEATHER_API_KEY}&units=imperial`),
-      fetch('https://api.deepseek.com/v1/chat/completions', {
+    if (type === 'place') {
+      const placeRes = await timeFetch('OpenStreetMap', `https://nominatim.openstreetmap.org/search?q=${city}&format=json&limit=1`);
+      const placeData = await placeRes.json();
+      const place = placeData[0]?.display_name || 'a cool spot';
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ place })
+      };
+    }
+
+    if (type === 'weather') {
+      const weatherRes = await timeFetch('OpenWeatherMap', `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${process.env.WEATHER_API_KEY}&units=imperial`);
+      const weatherData = await weatherRes.json();
+      const weather = weatherData.weather[0]?.description && weatherData.main?.temp
+        ? `${weatherData.weather[0].description}, ${Math.round(weatherData.main.temp)}°F`
+        : 'typical weather';
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ weather })
+      };
+    }
+
+    if (type === 'plan') {
+      const aiRes = await timeFetch('DeepSeek Plan', 'https://api.deepseek.com/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${apiKey}`,
@@ -35,96 +69,31 @@ export const handler = async (event) => {
           model: 'deepseek-chat',
           messages: [{
             role: 'user',
-            content: `In ${hours}h in ${city}, suggest a short mini-adventure at a notable place. Return only valid JSON, no Markdown: {"adventure": "short description"}`
+            content: `For a ${hours}h trip in ${city}, give a short adventure, 3 to-dos, 3 tips. JSON: {"adventure": "desc", "todo": ["1", "2", "3"], "tips": ["1", "2", "3"]}`
           }],
-          max_tokens: 50
+          max_tokens: 250  // Up from 150
         })
-      }),
-      fetch('https://api.deepseek.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'deepseek-chat',
-          messages: [{
-            role: 'user',
-            content: `For a ${hours}h adventure in ${city}, suggest 3 short to-do items. Return only valid JSON, no Markdown: {"todo": ["item1", "item2", "item3"]}`
-          }],
-          max_tokens: 60
-        })
-      }),
-      fetch('https://api.deepseek.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'deepseek-chat',
-          messages: [{
-            role: 'user',
-            content: `For a trip to ${city}, suggest 3 short, practical travel tips. Return only valid JSON, no Markdown: {"tips": ["tip1", "tip2", "tip3"]}`
-          }],
-          max_tokens: 60
-        })
-      })
-    ]);
-
-    // Process responses
-    const placeData = await placeRes.json();
-    const place = placeData[0]?.display_name || 'a cool spot';
-
-    const weatherData = await weatherRes.json();
-    const weather = weatherData.weather[0]?.description && weatherData.main?.temp
-      ? `${weatherData.weather[0].description}, ${Math.round(weatherData.main.temp)}°F`
-      : 'typical weather';
-
-    const aiAdventureData = await aiAdventureRes.json();
-    const rawAdventureContent = aiAdventureData.choices[0].message.content;
-    let adventureOutput;
-    try {
-      adventureOutput = JSON.parse(cleanJson(rawAdventureContent));
-    } catch (e) {
-      console.error('Adventure JSON parse error:', e);
-      adventureOutput = { adventure: `Explore ${place} for ${hours} hours!` };
+      });
+      const aiData = await aiRes.json();
+      const rawContent = aiData.choices[0].message.content;
+      let aiOutput;
+      try {
+        aiOutput = JSON.parse(cleanJson(rawContent));
+      } catch (e) {
+        console.error('AI JSON parse error:', e);
+        aiOutput = {
+          adventure: `Explore a cool spot in ${city} for ${hours}h!`,
+          todo: ['Visit a landmark', 'Enjoy the view', 'Take a break'],
+          tips: ['Pack light', 'Stay hydrated', 'Check local times']
+        };
+      }
+      return {
+        statusCode: 200,
+        body: JSON.stringify(aiOutput)
+      };
     }
 
-    const aiTodoData = await aiTodoRes.json();
-    // console.log('DeepSeek todo response:', aiTodoData);
-    const rawTodoContent = aiTodoData.choices[0].message.content;
-    // console.log('Raw todo content:', rawTodoContent);
-    let todoOutput;
-    try {
-      todoOutput = JSON.parse(cleanJson(rawTodoContent));
-    } catch (e) {
-      console.error('Todo JSON parse error:', e);
-      todoOutput = { todo: [`Visit ${place}`, 'Enjoy the view', 'Take a break'] };
-    }
-
-    const aiTipsData = await aiTipsRes.json();
-    const rawTipsContent = aiTipsData.choices[0].message.content;
-    let tipsOutput;
-    try {
-      tipsOutput = JSON.parse(cleanJson(rawTipsContent));
-    } catch (e) {
-      console.error('Tips JSON parse error:', e);
-      tipsOutput = { tips: ['Pack light', 'Stay hydrated', 'Check local times'] };
-    }
-
-    const output = {
-      adventure: adventureOutput.adventure,
-      todo: todoOutput.todo,
-      weather,
-      tips: tipsOutput.tips
-    };
-    // console.log('Output:', output);
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify(output)
-    };
+    return { statusCode: 400, body: JSON.stringify({ error: 'Invalid type' }) };
   } catch (error) {
     console.error('Error:', error);
     return {

@@ -8,6 +8,7 @@ const Home = () => {
   const [hours, setHours] = useState('');
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
   const [password, setPassword] = useState('');
   const [userApiKey, setUserApiKey] = useState('');
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -33,25 +34,47 @@ const Home = () => {
     }
   };
 
+  const fetchAdventure = async (type) => {
+    const res = await fetch(`/.netlify/functions/adventure?type=${type}`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        ...(userApiKey && { 'X-DeepSeek-API-Key': userApiKey })
+      },
+      body: JSON.stringify({ city: `${city}, ${country}`, hours })
+    });
+    if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+    return res.json();
+  };
+
   const getAdventure = async () => {
     setLoading(true);
     setCheckedTodos([]);
+    setResult(null);
+    
     try {
-      const res = await fetch('/.netlify/functions/adventure', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          ...(userApiKey && { 'X-DeepSeek-API-Key': userApiKey })
-        },
-        body: JSON.stringify({ city: `${city}, ${country}`, hours })
+      setLoadingMessage('Finding a spot...');
+      const placeData = await fetchAdventure('place');
+      
+      setLoadingMessage('Checking weather...');
+      const weatherData = await fetchAdventure('weather');
+      
+      setLoadingMessage('Planning your adventure...');
+      const planData = await fetchAdventure('plan');
+      
+      setResult({
+        tripTitle: `${city} Getaway: ${hours} Hours`,
+        place: placeData.place,
+        weather: weatherData.weather,
+        adventure: planData.adventure,
+        todo: planData.todo,
+        tips: planData.tips
       });
-      if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
-      const data = await res.json();
-      setResult({ ...data, tripTitle: `${city} Getaway: ${hours} Hours` });
     } catch (error) {
       setResult({ error: error.message });
     }
     setLoading(false);
+    setLoadingMessage('');
   };
 
   const toggleTodo = (index) => {
@@ -75,7 +98,7 @@ const Home = () => {
       }).catch(err => console.error('Share failed:', err));
     } else {
       navigator.clipboard.writeText(shareText);
-      alert('Adventure copied to clipboard!');
+      alert('Plan copied to clipboard!');
     }
   };
 
@@ -178,6 +201,7 @@ const Home = () => {
             <h2>{result.tripTitle}</h2>
             <button className="share-btn" onClick={shareAdventure}>Share Plan</button>
           </div>
+          {loading && <p className="loading">{loadingMessage}</p>}
           {result.error ? (
             <p className="error">{result.error}</p>
           ) : (
