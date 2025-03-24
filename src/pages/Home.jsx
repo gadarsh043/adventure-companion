@@ -35,7 +35,10 @@ const Home = () => {
   };
 
   const fetchAdventure = async (type) => {
-    const res = await fetch(`/.netlify/functions/adventure?type=${type}`, {
+    const url = type === 'plan'
+      ? 'https://adventure-companion-backend-production.up.railway.app/api/plan'  // Add /api/plan
+      : `/.netlify/functions/adventure?type=${type}`;
+    const res = await fetch(url, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
