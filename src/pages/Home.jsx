@@ -14,6 +14,7 @@ const Home = () => {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [showApiInstructions, setShowApiInstructions] = useState(false);
   const [checkedTodos, setCheckedTodos] = useState([]);
+  const [citySuggestions, setCitySuggestions] = useState([]);
 
   useEffect(() => {
     fetch('https://restcountries.com/v3.1/all?fields=name,cca2')
@@ -105,6 +106,18 @@ const Home = () => {
     }
   };
 
+  const handleCityChange = async (e) => {
+    const value = e.target.value;
+    setCity(value);
+    if (value.length > 2) {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${value},${country}&format=json&limit=5`);
+      const data = await res.json();
+      setCitySuggestions(data.map(d => d.display_name));
+    } else {
+      setCitySuggestions([]);
+    }
+  };
+
   const reset = () => {
     setCountry('');
     setCity('');
@@ -179,12 +192,21 @@ const Home = () => {
               <option key={c.cca2} value={c.name.common}>{c.name.common}</option>
             ))}
           </select>
-          <input
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            placeholder="City or Place"
-            disabled={loading || !country}
-          />
+          <div className="city-input">
+            <input
+              value={city}
+              onChange={handleCityChange}
+              placeholder="City or Place"
+              disabled={loading || !country}
+            />
+            {citySuggestions.length > 0 && (
+              <ul className="suggestions">
+                {citySuggestions.map((s, i) => (
+                  <li key={i} onClick={() => { setCity(s); setCitySuggestions([]); }}>{s}</li>
+                ))}
+              </ul>
+            )}
+          </div>
           <input
             type="number"
             value={hours}
