@@ -11,7 +11,7 @@ const Home = () => {
   const [loadingMessage, setLoadingMessage] = useState('');
   const [password, setPassword] = useState('');
   const [userApiKey, setUserApiKey] = useState('');
-  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(true);
   const [showApiInstructions, setShowApiInstructions] = useState(false);
   const [checkedTodos, setCheckedTodos] = useState([]);
 
